@@ -2,7 +2,7 @@ name: K8s Pod Check
 
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 0 1 * *'
   workflow_dispatch:
 
 jobs:
@@ -11,12 +11,12 @@ jobs:
     steps:
     - name: Setup kubectl
       uses: azure/setup-kubectl@v3
-      
+
     - name: Create SSH tunnel
       run: |
         echo "${{ secrets.BASTION_SSH_KEY }}" > /tmp/bastion_key
         chmod 600 /tmp/bastion_key
-        
+
         ssh -i /tmp/bastion_key \
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
@@ -24,9 +24,9 @@ jobs:
             -L 6444:${{ secrets.K8S_MASTER_HOST }}:${{ secrets.K8S_MASTER_PORT }} \
             -N -f \
             ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}
-        
+
         sleep 10
-        
+
         if nc -z localhost 6444; then
           echo "SSH tunnel established successfully"
         else
